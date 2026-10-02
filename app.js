@@ -5,6 +5,8 @@ import TileLayer from "https://js.arcgis.com/5.1/@arcgis/core/layers/TileLayer.j
 import GraphicsLayer from "https://js.arcgis.com/5.1/@arcgis/core/layers/GraphicsLayer.js";
 import Graphic from "https://js.arcgis.com/5.1/@arcgis/core/Graphic.js";
 import Polyline from "https://js.arcgis.com/5.1/@arcgis/core/geometry/Polyline.js";
+import Point from "https://js.arcgis.com/5.1/@arcgis/core/geometry/Point.js";
+import { createIcons, Flame, RotateCcw } from "https://esm.sh/lucide@0.468.0";
 import Zoom from "https://js.arcgis.com/5.1/@arcgis/core/widgets/Zoom.js";
 import * as geometryEngine from "https://js.arcgis.com/5.1/@arcgis/core/geometry/geometryEngine.js";
 import esriConfig from "https://js.arcgis.com/5.1/@arcgis/core/config.js";
@@ -628,6 +630,187 @@ function renderLegend() {
 let view;
 let map;
 
+const impactAreaLayer = new GraphicsLayer({
+  title: "Shanghai impact area",
+  elevationInfo: { mode: "on-the-ground" },
+});
+const impactedFacilitiesLayer = new GraphicsLayer({
+  title: "Impacted facilities",
+  elevationInfo: { mode: "relative-to-ground", offset: 12, unit: "meters" },
+});
+const shanghaiPoint = new Point({ longitude: 121.4737, latitude: 31.2304 });
+const impactBtn = document.getElementById("impact-btn");
+const resetImpactBtn = document.getElementById("reset-impact-btn");
+const impactStatus = document.getElementById("impact-status");
+const impactEffects = document.getElementById("impact-effects");
+let impactController = null;
+let preImpactState = null;
+
+createIcons({ icons: { Flame, RotateCcw } });
+
+function animateImpact(duration, signal, update) {
+  return new Promise((resolve, reject) => {
+    let frame;
+    const started = performance.now();
+    const abort = () => {
+      cancelAnimationFrame(frame);
+      reject(new DOMException("Simulation reset", "AbortError"));
+    };
+    if (signal.aborted) return abort();
+    signal.addEventListener("abort", abort, { once: true });
+    const tick = (now) => {
+      const progress = Math.min((now - started) / duration, 1);
+      update(progress);
+      if (progress < 1) {
+        frame = requestAnimationFrame(tick);
+      } else {
+        signal.removeEventListener("abort", abort);
+        resolve();
+      }
+    };
+    frame = requestAnimationFrame(tick);
+  });
+}
+
+function resetImpact() {
+  impactController?.abort();
+  impactController = null;
+  view.animation?.stop();
+  impactAreaLayer.removeAll();
+  impactedFacilitiesLayer.removeAll();
+  impactEffects.replaceChildren();
+  if (preImpactState) {
+    const saved = preImpactState;
+    preImpactState = null;
+    currentStep = saved.currentStep;
+    activeTypes = saved.activeTypes;
+    connectionsOn = saved.connectionsOn;
+    riskMode = saved.riskMode;
+    focusedNodeIds = saved.focusedNodeIds;
+    focusedRouteIds = saved.focusedRouteIds;
+    focusedNodePoint = saved.focusedNodePoint;
+    manufacturingRouteIds = saved.manufacturingRouteIds;
+    renderManifest();
+    applyState(true);
+    view.goTo(saved.camera, { animate: false }).catch(() => {});
+  }
+  impactBtn.disabled = false;
+  resetImpactBtn.disabled = true;
+  impactStatus.textContent = "Ready / Shanghai";
+}
+
+async function simulateShanghaiImpact() {
+  if (impactController) return;
+  const controller = new AbortController();
+  const { signal } = controller;
+  impactController = controller;
+  preImpactState = {
+    camera: view.camera.clone(), currentStep, activeTypes: new Set(activeTypes),
+    connectionsOn, riskMode, focusedNodeIds, focusedRouteIds,
+    focusedNodePoint, manufacturingRouteIds,
+  };
+  impactBtn.disabled = true;
+  resetImpactBtn.disabled = false;
+  impactStatus.textContent = "Locating Shanghai facilities...";
+  const queryLayer = new FeatureLayer({ url: NODES_URL });
+  try {
+    const polygon = geometryEngine.geodesicBuffer(shanghaiPoint, 60, "kilometers");
+    const result = await queryLayer.queryFeatures({
+      geometry: polygon,
+      spatialRelationship: "intersects",
+      where: "NodeType NOT IN ('Port', 'Airport')",
+      outFields: ["*"],
+      returnGeometry: true,
+    }, { signal });
+    if (signal.aborted) return;
+    if (result.exceededTransferLimit) throw new Error("Facility query incomplete");
+    focusedNodeIds = null;
+    focusedRouteIds = null;
+    focusedNodePoint = null;
+    activeTypes = new Set(ALL_TYPES);
+    await applyState(true);
+    if (signal.aborted) return;
+    await view.goTo({ center: shanghaiPoint, zoom: 9, tilt: 0 }, { duration: 1400 });
+    if (signal.aborted) return;
+    view.popup.close();
+    impactStatus.textContent = "Meteor inbound / Shanghai";
+    const meteor = document.createElement("div");
+    meteor.className = "meteor";
+    impactEffects.appendChild(meteor);
+    await animateImpact(1900, signal, (progress) => {
+      const target = view.toScreen(shanghaiPoint);
+      if (!target) return;
+      const start = { x: -220, y: -60 };
+      const travel = progress * progress;
+      const angle = Math.atan2(target.y - start.y, target.x - start.x);
+      meteor.style.left = `${start.x + (target.x - start.x) * travel}px`;
+      meteor.style.top = `${start.y + (target.y - start.y) * travel}px`;
+      meteor.style.transform = `translate(-50%, -50%) rotate(${angle}rad)`;
+    });
+    meteor.remove();
+    impactAreaLayer.add(new Graphic({
+      geometry: polygon,
+      symbol: {
+        type: "simple-fill", color: [255, 65, 65, 0.18],
+        outline: { color: "#ff6060", width: 2 },
+      },
+      popupTemplate: {
+        title: "Shanghai impact area",
+        content: `Simulated impact / 60 km radius / ${result.features.length} facilities affected`,
+      },
+    }));
+    const markers = result.features.map((feature) => {
+      const type = NODE_TYPES.find((entry) => entry.value === feature.attributes.NodeType);
+      return new Graphic({
+        geometry: feature.geometry, attributes: feature.attributes,
+        symbol: type ? nodeSymbol({ ...type, color: "#ffbf69" }) : circleSymbol("#ffbf69", 20),
+        popupTemplate: nodesPopupTemplate,
+      });
+    });
+    impactedFacilitiesLayer.addMany(markers);
+    const flash = document.createElement("div");
+    flash.className = "impact-flash";
+    impactEffects.appendChild(flash);
+    impactStatus.textContent = `Impact / ${markers.length} facilities pulsing`;
+    await animateImpact(1800, signal, (progress) => {
+      const target = view.toScreen(shanghaiPoint);
+      if (target) {
+        flash.style.left = `${target.x}px`;
+        flash.style.top = `${target.y}px`;
+      }
+      flash.style.transform = `translate(-50%, -50%) scale(${1 + progress * 10})`;
+      flash.style.opacity = `${1 - progress}`;
+      const size = 24 + Math.sin(progress * Math.PI * 6) * 10;
+      markers.forEach((marker) => {
+        const symbol = marker.symbol.clone();
+        if (symbol.type === "picture-marker") {
+          symbol.width = size;
+          symbol.height = size;
+        } else {
+          symbol.size = size;
+        }
+        marker.symbol = symbol;
+      });
+    });
+    flash.remove();
+    markers.forEach((marker) => {
+      const type = NODE_TYPES.find((entry) => entry.value === marker.attributes.NodeType);
+      marker.symbol = type ? nodeSymbol({ ...type, color: "#ff303f" }) : circleSymbol("#ff303f", 20);
+    });
+    impactStatus.textContent = `${markers.length} facilities impacted / 60 km area`;
+  } catch (error) {
+    if (signal.aborted) return;
+    console.error("Shanghai simulation failed", error);
+    resetImpact();
+    impactStatus.textContent = "Simulation unavailable. Please retry.";
+  } finally {
+    queryLayer.destroy();
+  }
+}
+
+impactBtn.addEventListener("click", simulateShanghaiImpact);
+resetImpactBtn.addEventListener("click", resetImpact);
+
 function activeNodeLayer() {
   return riskMode ? riskNodesLayer : nodesLayer;
 }
@@ -881,12 +1064,14 @@ async function boot() {
     visible: false,
     outFields: ["*"],
   });
-  map.addMany([highwaysLayer, routeLayer, nodesLayer, riskNodesLayer]);
+  map.addMany([highwaysLayer, routeLayer, nodesLayer, riskNodesLayer, impactAreaLayer, impactedFacilitiesLayer]);
   createView([10, 15], 2);
   await view.when();
 
   renderManifest();
   await applyState();
+  impactBtn.disabled = false;
+  impactStatus.textContent = "Ready / Shanghai";
 }
 
 boot();

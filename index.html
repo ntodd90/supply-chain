@@ -31,6 +31,13 @@
         <div class="route-line"></div>
         <div id="manifest-steps"></div>
       </div>
+      <section class="simulation-controls" aria-label="Shanghai impact simulation">
+        <div class="simulation-actions">
+          <button class="nav-btn impact-btn" id="impact-btn" type="button" disabled><i data-lucide="flame" aria-hidden="true"></i>Impact Shanghai</button>
+          <button class="nav-btn" id="reset-impact-btn" type="button" title="Reset simulation" aria-label="Reset simulation" disabled><i data-lucide="rotate-ccw" aria-hidden="true"></i></button>
+        </div>
+        <div id="impact-status" role="status" aria-live="polite">Simulation loading...</div>
+      </section>
       <div class="rail-controls">
         <span class="progress" id="progress-label">STEP 01 / 07</span>
         <div class="nav-buttons">
@@ -42,6 +49,7 @@
 
     <div class="map-wrap">
       <div id="viewDiv"></div>
+      <div class="impact-effects" id="impact-effects" aria-hidden="true"></div>
 
       <div class="layer-chips" id="layer-chips"></div>
 
