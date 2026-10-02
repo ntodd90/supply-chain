@@ -1,0 +1,657 @@
+/* ============================================================
+   SUPPLY CHAIN CONTROL — design tokens
+   Palette: night-ops control room. Steel/navy base, amber for
+   status + risk signal, cargo teal for flow/active state.
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+:root {
+  --bg: #0b1220;
+  --panel: #121b2e;
+  --panel-2: #182236;
+  --steel: #3d4c63;
+  --steel-dim: #26314a;
+  --fog: #a9b4c4;
+  --fog-dim: #6c7891;
+  --paper: #edeff3;
+  --amber: #e8a33d;
+  --amber-dim: #7a5a26;
+  --teal: #4fb6a8;
+  --teal-dim: #2e6e68;
+  --risk-low: #4fb6a8;
+  --risk-med: #e8a33d;
+  --risk-high: #e2603f;
+
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "IBM Plex Sans", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  --rail-width: 380px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--paper);
+  font-family: var(--font-body);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* -------------------- header -------------------- */
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--steel-dim);
+  background: var(--panel);
+  flex: 0 0 auto;
+  z-index: 20;
+}
+
+.app-header .brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.app-header .brand-mark {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--amber);
+  border: 1px solid var(--amber-dim);
+  padding: 3px 7px;
+  border-radius: 3px;
+}
+
+.app-header h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+.app-header .subtitle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fog-dim);
+  margin-left: 4px;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--fog);
+}
+
+.status-badge .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 8px var(--teal);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* -------------------- layout -------------------- */
+
+.layout {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+}
+
+/* -------------------- manifest rail -------------------- */
+
+.manifest-rail {
+  width: var(--rail-width);
+  flex: 0 0 var(--rail-width);
+  background: var(--panel);
+  border-right: 1px solid var(--steel-dim);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.manifest-scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 18px 0 10px;
+  position: relative;
+}
+
+.manifest-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.manifest-scroll::-webkit-scrollbar-thumb {
+  background: var(--steel-dim);
+  border-radius: 3px;
+}
+
+.manifest-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  color: var(--fog-dim);
+  padding: 0 22px 12px;
+  text-transform: uppercase;
+}
+
+/* the "route line" — signature element connecting checkpoints */
+.route-line {
+  position: absolute;
+  left: 33px;
+  top: 46px;
+  bottom: 20px;
+  width: 2px;
+  background: var(--steel-dim);
+}
+
+.manifest-step {
+  position: relative;
+  padding: 14px 22px 14px 54px;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: background 0.15s ease;
+}
+
+.manifest-step:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.manifest-step .checkpoint {
+  position: absolute;
+  left: 28px;
+  top: 18px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 2px solid var(--steel);
+  z-index: 2;
+  transition: all 0.2s ease;
+}
+
+.manifest-step.active .checkpoint {
+  background: var(--amber);
+  border-color: var(--amber);
+  box-shadow: 0 0 0 4px rgba(232, 163, 61, 0.18);
+}
+
+.manifest-step.done .checkpoint {
+  background: var(--teal-dim);
+  border-color: var(--teal);
+}
+
+.manifest-step.active {
+  background: rgba(232, 163, 61, 0.06);
+}
+
+.step-code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fog-dim);
+  letter-spacing: 0.08em;
+}
+
+.manifest-step.active .step-code {
+  color: var(--amber);
+}
+
+.step-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  margin: 3px 0 6px;
+  color: var(--paper);
+}
+
+.step-body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fog);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.25s ease, opacity 0.2s ease, margin 0.25s ease;
+}
+
+.manifest-step.active .step-body {
+  max-height: 220px;
+  opacity: 1;
+  margin-bottom: 10px;
+}
+
+.step-tag {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: var(--teal);
+  background: rgba(79, 182, 168, 0.1);
+  border: 1px solid var(--teal-dim);
+  border-radius: 3px;
+  padding: 4px 8px;
+  width: fit-content;
+}
+
+.manifest-step.active .step-tag {
+  display: flex;
+}
+
+/* -------------------- rail controls -------------------- */
+
+.rail-controls {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px;
+  border-top: 1px solid var(--steel-dim);
+  background: var(--panel-2);
+}
+
+.rail-controls .progress {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fog-dim);
+  letter-spacing: 0.06em;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-btn {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  background: transparent;
+  border: 1px solid var(--steel);
+  color: var(--paper);
+  padding: 7px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-btn:hover:not(:disabled) {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* -------------------- map -------------------- */
+
+.map-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#viewDiv {
+  width: 100%;
+  height: 100%;
+}
+
+.node-ripple {
+  position: absolute;
+  z-index: 8;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.node-ripple span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--ripple-color);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--ripple-color);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.25);
+  animation: node-ripple 900ms cubic-bezier(0.18, 0.72, 0.28, 1) forwards;
+}
+
+.node-ripple span:nth-child(2) {
+  animation-delay: 110ms;
+}
+
+.node-ripple span:nth-child(3) {
+  animation-delay: 220ms;
+}
+
+@keyframes node-ripple {
+  0% {
+    opacity: 0.85;
+  }
+  70% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(4.5);
+  }
+}
+
+/* layer toggle chips, bottom-left overlay */
+.layer-chips {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 460px;
+}
+
+/* live totals, positioned above the map controls */
+.stats-panel {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  z-index: 10;
+  width: min(360px, calc(100% - 32px));
+  padding: 12px;
+  background: rgba(18, 27, 46, 0.94);
+  border: 1px solid var(--steel-dim);
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+}
+
+.stats-heading,
+.stats-foot {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--fog-dim);
+  text-transform: uppercase;
+}
+
+.stats-scope {
+  color: var(--teal);
+}
+
+.stats-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.clear-selection {
+  padding: 3px 6px;
+  border: 1px solid var(--steel);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--fog);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.clear-selection:hover:not(:disabled) {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.clear-selection:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0 8px;
+}
+
+.stat-card {
+  min-width: 0;
+  padding: 9px 10px;
+  border-left: 2px solid var(--amber);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.stat-label,
+.stat-unit {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fog-dim);
+  text-transform: uppercase;
+}
+
+.stat-value {
+  display: block;
+  overflow: hidden;
+  margin: 4px 0 1px;
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stats-foot {
+  justify-content: flex-start;
+  color: var(--fog-dim);
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(18, 27, 46, 0.92);
+  border: 1px solid var(--steel);
+  color: var(--fog);
+  padding: 6px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.chip .swatch {
+  width: 8px;
+  height: 8px;
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  flex: 0 0 auto;
+}
+
+.chip.on {
+  border-color: var(--teal);
+  color: var(--paper);
+}
+
+.chip.on .swatch {
+  box-shadow: 0 0 6px currentColor;
+}
+
+/* legend / manifest key, top-right overlay */
+.legend-panel {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 10;
+  background: rgba(18, 27, 46, 0.92);
+  border: 1px solid var(--steel-dim);
+  border-radius: 4px;
+  padding: 12px 14px;
+  backdrop-filter: blur(4px);
+  min-width: 168px;
+}
+
+.legend-panel .legend-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--fog-dim);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fog);
+  padding: 3px 0;
+}
+
+.legend-row .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.legend-row .node-key {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65);
+}
+
+.legend-row .line-key {
+  width: 18px;
+  height: max(2px, var(--line-width));
+  flex: 0 0 auto;
+  background: var(--line-color);
+  border-radius: 2px;
+}
+
+/* popup field grid (styled via shadow-piercing where possible;
+   esri popup content honors inline styles on our template string) */
+.pop-grid {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.pop-grid .row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.pop-grid .k {
+  color: #888;
+}
+
+.pop-grid .v {
+  font-weight: 600;
+}
+
+.pop-grid .v.money {
+  color: var(--teal);
+}
+
+.transfer-section {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #d7d7d7;
+}
+
+.transfer-title {
+  margin-bottom: 5px;
+  color: #666;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.transfer-row,
+.transfer-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  font-size: 11px;
+}
+
+.transfer-row {
+  border-bottom: 1px solid #eeeeee;
+  color: #555;
+}
+
+.transfer-total {
+  margin-top: 3px;
+  font-weight: 600;
+}
+
+.transfer-row .money,
+.transfer-total .money {
+  color: #218a58;
+}
+
+.transfer-empty {
+  color: #888;
+  font-size: 11px;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --rail-width: 300px;
+  }
+  .legend-panel {
+    display: none;
+  }
+}

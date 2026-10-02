@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supply Chain Control</title>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/5.1/@arcgis/core/assets/esri/themes/dark/main.css" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark">SCC</span>
+      <h1>Supply Chain Control</h1>
+      <span class="subtitle">// global network &amp; risk exposure</span>
+    </div>
+    <div class="status-badge">
+      <span class="dot"></span>
+      LIVE FEED — ARCGIS
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="manifest-rail">
+      <div class="manifest-scroll" id="manifest-scroll">
+        <div class="manifest-eyebrow">Manifest / guided walkthrough</div>
+        <div class="route-line"></div>
+        <div id="manifest-steps"></div>
+      </div>
+      <div class="rail-controls">
+        <span class="progress" id="progress-label">STEP 01 / 07</span>
+        <div class="nav-buttons">
+          <button class="nav-btn" id="prev-btn">&larr; PREV</button>
+          <button class="nav-btn" id="next-btn">NEXT &rarr;</button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="map-wrap">
+      <div id="viewDiv"></div>
+
+      <div class="layer-chips" id="layer-chips"></div>
+
+      <section class="stats-panel" aria-label="Visible supply chain totals">
+        <div class="stats-heading">
+          <span>Live extent</span>
+          <div class="stats-heading-actions">
+            <span class="stats-scope" id="stats-scope">ALL FACILITIES</span>
+            <button class="clear-selection" id="clear-selection" type="button" disabled>Clear selection</button>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-label">Goods transferred</span>
+            <strong class="stat-value" id="volume-total">--</strong>
+            <span class="stat-unit">units</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Transfer value</span>
+            <strong class="stat-value" id="cost-total">--</strong>
+            <span class="stat-unit">USD</span>
+          </div>
+        </div>
+        <div class="stats-foot" id="stats-foot">Calculating visible routes...</div>
+      </section>
+
+      <div class="legend-panel" id="legend-panel">
+        <div class="legend-title">Key</div>
+        <div id="legend-rows"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
