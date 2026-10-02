@@ -732,7 +732,7 @@ async function simulateShanghaiImpact() {
     if (signal.aborted) return;
     await view.goTo({ center: shanghaiPoint, zoom: 9, tilt: 0 }, { duration: 1400 });
     if (signal.aborted) return;
-    view.popup.close();
+    view.closePopup();
     impactStatus.textContent = "Meteor inbound / Shanghai";
     const meteor = document.createElement("div");
     meteor.className = "meteor";
@@ -952,7 +952,7 @@ async function handleMapClick(event) {
     playNodeRipple(event, nodeHit.graphic.attributes.NodeType);
     if (currentStep === 0 || currentStep === 1) focusNode(nodeHit.graphic);
   } else {
-    view.popup.close();
+    view.closePopup();
     clearSelection(true);
   }
 }
